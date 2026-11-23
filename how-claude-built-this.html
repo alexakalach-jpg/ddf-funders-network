@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Claude built this — DDF Funders Network</title>
+<style>
+  :root { --ink:#1f2328; --muted:#6a737d; --line:#e6e8eb; --bg:#fbfbfa; --you:#f1f3f5; --accent:#1971c2; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+  article { max-width: 780px; margin: 0 auto; padding: 32px 20px 60px; }
+  h1 { font-size: 30px; margin: 0 0 4px; letter-spacing: -.01em; }
+  h2 { font-size: 20px; margin: 40px 0 10px; padding-top: 8px; border-top: 1px solid var(--line); }
+  .sub { color: var(--muted); margin: 0 0 18px; }
+  a { color: var(--accent); }
+  .turn { margin: 14px 0; }
+  .who { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .you { background: var(--you); border-radius: 12px; padding: 12px 16px; }
+  .claude { border-left: 3px solid var(--line); padding: 2px 0 2px 16px; }
+  .claude ul { margin: 6px 0; padding-left: 20px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  figure { margin: 14px 0; }
+  figure img { width: 100%; border: 1px solid var(--line); border-radius: 8px; }
+  figcaption { color: var(--muted); font-size: 13px; }
+  .pill { display:inline-block; font-size:12px; padding:1px 8px; border-radius:999px; background:#e7f5ff; color:#1864ab; }
+  .statement { background:#fff; border:1px solid var(--line); border-radius:10px; padding: 4px 20px 12px; }
+  code { background:#f1f3f5; padding:1px 5px; border-radius:4px; font-size: 13px; }
+</style>
+</head>
+<body>
+<article>
+  <p><a href="index.html">← Back to the visualization</a></p>
+  <h1>How Claude built this</h1>
+  <p class="sub">A record of the prompts, design decisions and checks behind the <a href="index.html">DDF Funders Network</a>, built for a data visualization class assignment by Alexa Kalach Luft with Claude (Anthropic).</p>
+
+  <div class="statement">
+    <h2 style="border:0;margin-top:14px">AI statement</h2>
+    <p><b>Software tools.</b> Claude (Opus 5.5) in the Claude app, running Claude Code's agent tools: a shell and file editor to write the code, a built-in browser to study the reference visualization, web search to check the data, and headless Chrome (Playwright) to test the page. The page itself is plain HTML, CSS and JavaScript with <a href="https://d3js.org">D3.js v7</a> for the force-directed layout, hosted on GitHub Pages.</p>
+    <p><b>Key prompts.</b> The opening prompt asked Claude to recreate the reference network and make it "as intuitive and easy to use as possible." Follow-up prompts targeted specific usability problems. They are listed in order below.</p>
+    <p><b>Verifying accuracy and usability.</b> (1) The data was checked in code: 13 programs, 80 funders and $755.7M in known program dollars, the same totals as the reference, with no duplicate funders and no orphan endowment entries. (2) Program amounts and funder lists for Humanity AI, the Tribal Nations Conservation Pledge and OPT-In for Families were spot-checked against the foundations' own press releases and news coverage. (3) A scripted browser test hovered, clicked, searched, filtered and played the timeline on desktop and a phone-sized screen, checked for JavaScript errors and saved screenshots. Claude reviewed each screenshot for clutter, empty space and confusing states, then fixed what it found (see the iteration log).</p>
+  </div>
+
+  <h2>Prompts</h2>
+
+  <div class="turn"><div class="who">You · Prompt 1</div>
+    <div class="you">Use Claude Code to create this interactive visualization: https://ddf-constellation.vercel.app. You don't have to make it match this visualization exactly — that's not the goal of this assignment. You need to demonstrate that you used the prompts to guide the AI to make the interactive design as intuitive and easy to use as possible. Use the prompts in this page as a reference: https://ddf-constellation.vercel.app/how-claude-built-this.html … You can ask Claude to create a page "How Claude built this".</div>
+  </div>
+  <div class="turn"><div class="who">Claude</div>
+    <div class="claude">
+      <p>I opened the reference in a browser and read its 49-prompt build log. I reused its dataset of 13 pooled-fund programs (with source links) and rebuilt the interface from scratch around one question: <i>what would a first-time visitor need in order to understand this without instructions?</i></p>
+      <ul>
+        <li><b>Plain-language title and one-sentence key</b> under it ("Each dot is a funder… bigger dots… thick lines…"), so the encoding is explained before anyone has to hunt for a legend.</li>
+        <li><b>Clusters by program area.</b> Funders are pulled toward their area's region, and funders active in two areas sit between them with split-color dots.</li>
+        <li><b>A side panel that is never empty.</b> On load it shows the overview: totals, a five-line "How to explore" guide, and clickable lists of all programs and repeat partners. People who never discover that dots are clickable can still reach every detail from the list.</li>
+        <li><b>Hover to preview, click to commit.</b> Hovering a dot, a line or a list row lights up the related funders without losing your current view. Clicking opens details, and a Back link retraces your steps.</li>
+        <li><b>Search</b> with autocomplete (press <code>/</code>). It previews the top match on the graph as you type.</li>
+        <li><b>Filters that explain themselves.</b> The area chips double as the color legend and show live program counts. A two-handle year slider and a Play button animate the network's growth, with the year shown large in the corner.</li>
+        <li><b>Escape hatches:</b> Reset, Esc and clicking empty space all return to the overview. If the filters hide everything, a message says how to recover.</li>
+        <li>An onboarding hint pill that disappears after the first click or after nine seconds.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Iteration log — usability problems found in testing and fixed</h2>
+  <p class="sub">After each build, a headless browser clicked through the page and Claude reviewed the screenshots. Each row is something a user would have stumbled on.</p>
+  <table>
+    <tr><th>Problem seen</th><th>Fix</th></tr>
+    <tr><td>The network filled only about 60% of the canvas, with dense, overlapping clusters.</td><td>Spread out the cluster centers, added more repulsion and spacing, and fit the drawing to the canvas.</td></tr>
+    <tr><td>Selecting Ford lit up 52 partners and buried the graph in overlapping labels.</td><td>When more than 16 funders are highlighted, label only the key ones (large endowment or several programs). Zoom in to see the rest.</td></tr>
+    <tr><td>The search box wrapped onto its own row and pushed the graph down.</td><td>Moved search into the title row and added a <code>/</code> keyboard shortcut.</td></tr>
+    <tr><td>Zooming into a program made lines absurdly thick.</td><td>Line widths now stay constant on screen at any zoom (<code>vector-effect: non-scaling-stroke</code>), and label size compensates for zoom.</td></tr>
+    <tr><td>In a program view, line widths showed each funder's total across all programs, which was misleading.</td><td>In a program view, each line shows that program's own size.</td></tr>
+    <tr><td>Filtering to a single area left a small cluster stranded in one corner.</td><td>Area filters now zoom to whatever is still visible.</td></tr>
+    <tr><td>Phones have no hover, but the hints said "Hover" and "Scroll."</td><td>On touch screens the text says "Tap" and "Pinch," and the panel stacks under the graph.</td></tr>
+    <tr><td>Filtering could hide the funder you were viewing, leaving a stale panel.</td><td>The panel falls back to the overview. Clicking a hidden program in a list turns its filter back on.</td></tr>
+  </table>
+
+  <figure><img src="img/funder-view.jpg" alt="Ford selected: its partners highlighted, with the detail panel listing its five programs"><figcaption>Funder view: click Ford to see its programs and the other funders at the same table.</figcaption></figure>
+  <figure><img src="img/program-view.jpg" alt="Humanity AI program view zoomed to its nine co-funders"><figcaption>Program view: the graph zooms to the program's funders, and the panel links to the source.</figcaption></figure>
+  <figure><img src="img/search.jpg" alt="Typing hew in search previews Hewlett's connections"><figcaption>Search previews the match on the graph before you commit.</figcaption></figure>
+
+  <h2>How it was checked</h2>
+  <table>
+    <tr><th>Check</th><th>Result</th></tr>
+    <tr><td>Data totals vs. the reference</td><td>13 programs · 80 funders · $755.7M known: match</td></tr>
+    <tr><td>Humanity AI ($500M, 10 foundations)</td><td>Confirmed by the MacArthur, Mellon and Omidyar announcements</td></tr>
+    <tr><td>Tribal Nations Conservation Pledge ($102.5M, 15 funders, DDF ≈ $32M)</td><td>Confirmed by DDF's March 2023 press release</td></tr>
+    <tr><td>OPT-In for Families ($33M; DDF, Duke Endowment, Aviv)</td><td>Confirmed by DDF and Inside Philanthropy</td></tr>
+    <tr><td>Scripted interaction test (hover, click, back, search, filter, play, reset)</td><td>All passed, no console errors</td></tr>
+    <tr><td>Phone layout (390 px wide)</td><td>Controls wrap, and the panel stacks below the graph</td></tr>
+  </table>
+  <p class="sub">Limits: endowments are not all from the same year (see each funder's note), and two programs have no public amount. Those lines are dashed and are not counted in the dollar totals.</p>
+</article>
+</body>
+</html>
